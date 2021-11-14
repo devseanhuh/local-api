@@ -1,0 +1,20 @@
+{
+  "name": "local-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/devseanhuh/local-api.git",
+  "author": "devseanhuh <devseanhuh@gmail.com>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "client": "yarn workspace client start",
+    "server": "yarn workspace server start"
+  },
+  "dependencies": {
+    "prettier": "^2.4.1"
+  }
+}
