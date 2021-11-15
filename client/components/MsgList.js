@@ -1,8 +1,9 @@
 import MsgItem from './MsgItem';
 import MsgInput from './MsgInput';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import fetcher from '../fetcher';
 import { useRouter } from 'next/router';
+import useInfiniteScroll from '../hooks/useInfiniteScroll';
 
 const userIds = ['sean', 'moon'];
 const getRandomUserId = () => userIds[Math.round(Math.random())];
@@ -19,8 +20,11 @@ const MsgList = () => {
   const {
     query: { userId = '' },
   } = useRouter();
-  const [msgs, setMsgs] = useState(null);
+  const [msgs, setMsgs] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const fetchMoreEl = useRef(null);
+  const intersecting = useInfiniteScroll(fetchMoreEl);
+  const [hasNext, setHasNext] = useState(true);
   const onCreate = async text => {
     const newMsg = await fetcher('post', '/messages', { text, userId });
     if (!newMsg) throw new Error('작업 도중 문제가 발생하였습니다.');
@@ -53,12 +57,19 @@ const MsgList = () => {
   };
 
   const getMsgs = async () => {
-    const msgs = await fetcher('get', '/messages');
-    setMsgs(msgs);
+    const newMsgs = await fetcher('get', '/messages', {
+      params: { cursor: msgs[msgs.length - 1]?.id || '' },
+    });
+    if (newMsgs.length === 0) {
+      setHasNext(false);
+      return;
+    }
+    setMsgs(msgs => [...msgs, ...newMsgs]);
   };
+
   useEffect(() => {
-    getMsgs();
-  }, []);
+    if (intersecting && hasNext) getMsgs();
+  }, [intersecting]);
 
   // console.log(JSON.stringify(originalMsgs));
   return (
@@ -77,6 +88,7 @@ const MsgList = () => {
           />
         ))}
       </ul>
+      <div ref={fetchMoreEl} />
     </>
   );
 };
