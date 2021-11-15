@@ -16,11 +16,11 @@ const originalMsgs = Array(50)
     text: `mock test - ${50 - i}`,
   }));
 
-const MsgList = () => {
+const MsgList = ({ smsgs, users }) => {
   const {
     query: { userId = '' },
   } = useRouter();
-  const [msgs, setMsgs] = useState([]);
+  const [msgs, setMsgs] = useState(smsgs);
   const [editingId, setEditingId] = useState(null);
   const fetchMoreEl = useRef(null);
   const intersecting = useInfiniteScroll(fetchMoreEl);
@@ -85,6 +85,7 @@ const MsgList = () => {
             startEdit={() => setEditingId(v.id)}
             onDelete={() => onDelete(v.id)}
             myId={userId}
+            user={users[v.userId]}
           />
         ))}
       </ul>
